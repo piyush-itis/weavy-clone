@@ -382,11 +382,31 @@ export default function WorkflowCanvas({
     }
   }, [nodes, edges]);
 
-  // Zoom presets
-  const zoomPresets = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 2.5, 3];
-  const handleZoomChange = useCallback((zoom: number) => {
+  // Zoom functions
+  const handleZoomIn = useCallback(() => {
     if (reactFlowInstance) {
-      reactFlowInstance.zoomTo(zoom);
+      reactFlowInstance.zoomIn();
+      setShowZoomMenu(false);
+    }
+  }, [reactFlowInstance]);
+
+  const handleZoomOut = useCallback(() => {
+    if (reactFlowInstance) {
+      reactFlowInstance.zoomOut();
+      setShowZoomMenu(false);
+    }
+  }, [reactFlowInstance]);
+
+  const handleZoomTo100 = useCallback(() => {
+    if (reactFlowInstance) {
+      reactFlowInstance.zoomTo(1);
+      setShowZoomMenu(false);
+    }
+  }, [reactFlowInstance]);
+
+  const handleZoomToFit = useCallback(() => {
+    if (reactFlowInstance) {
+      reactFlowInstance.fitView();
       setShowZoomMenu(false);
     }
   }, [reactFlowInstance]);
@@ -394,6 +414,30 @@ export default function WorkflowCanvas({
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Zoom shortcuts
+      if (event.metaKey || event.ctrlKey) {
+        if (event.key === "=" || event.key === "+") {
+          event.preventDefault();
+          handleZoomIn();
+          return;
+        }
+        if (event.key === "-") {
+          event.preventDefault();
+          handleZoomOut();
+          return;
+        }
+        if (event.key === "0") {
+          event.preventDefault();
+          handleZoomTo100();
+          return;
+        }
+        if (event.key === "1") {
+          event.preventDefault();
+          handleZoomToFit();
+          return;
+        }
+      }
+      
       if ((event.metaKey || event.ctrlKey) && event.key === "s") {
         event.preventDefault();
         if (onSave) {
@@ -415,7 +459,7 @@ export default function WorkflowCanvas({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [nodes, edges, setNodes, setEdges, onSave]);
+  }, [nodes, edges, setNodes, setEdges, onSave, handleZoomIn, handleZoomOut, handleZoomTo100, handleZoomToFit]);
 
   return (
     <div 
@@ -666,31 +710,107 @@ export default function WorkflowCanvas({
                     onClick={() => setShowZoomMenu(false)}
                   />
                   <div 
-                    className="absolute bottom-full left-0 mb-2 rounded-lg shadow-lg min-w-[120px] py-1 z-20"
+                    className="absolute top-full right-0 mt-2 z-20"
                     style={{
-                      background: '#111216',
-                      border: '1px solid #2A2D35',
+                      background: '#1A1B21',
+                      borderRadius: '14px',
+                      padding: '10px 12px',
+                      minWidth: '220px',
+                      boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)',
+                      fontFamily: 'Inter, SF Pro Display, system-ui, -apple-system, sans-serif',
                     }}
                   >
-                    {zoomPresets.map((zoom) => (
-                      <button
-                        key={zoom}
-                        onClick={() => handleZoomChange(zoom)}
-                        className={`w-full px-3 py-1.5 text-left text-sm transition-colors duration-200 rounded ${
-                          Math.abs(zoomLevel - zoom) < 0.01
-                            ? ""
-                            : "hover:bg-white/5"
-                        }`}
-                        style={{
-                          color: Math.abs(zoomLevel - zoom) < 0.01 ? '#0A0A0D' : '#E6E7EB',
-                          background: Math.abs(zoomLevel - zoom) < 0.01 ? '#F4F5A5' : 'transparent',
-                          fontFamily: 'Inter, SF Pro Display, system-ui, -apple-system, sans-serif',
-                          fontWeight: 500,
-                        }}
-                      >
-                        {Math.round(zoom * 100)}%
-                      </button>
-                    ))}
+                    {/* Zoom in */}
+                    <button
+                      onClick={handleZoomIn}
+                      className="w-full flex items-center justify-between transition-all duration-200 rounded-lg"
+                      style={{
+                        height: '36px',
+                        paddingLeft: '12px',
+                        paddingRight: '12px',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        gap: '12px',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                      }}
+                    >
+                      <span style={{ color: '#EDEEF1' }}>Zoom in</span>
+                      <span style={{ color: '#AEB1BC', fontWeight: 500, letterSpacing: '0.3px' }}>⌘ +</span>
+                    </button>
+
+                    {/* Zoom out */}
+                    <button
+                      onClick={handleZoomOut}
+                      className="w-full flex items-center justify-between transition-all duration-200 rounded-lg"
+                      style={{
+                        height: '36px',
+                        paddingLeft: '12px',
+                        paddingRight: '12px',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        gap: '12px',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                      }}
+                    >
+                      <span style={{ color: '#EDEEF1' }}>Zoom out</span>
+                      <span style={{ color: '#AEB1BC', fontWeight: 500, letterSpacing: '0.3px' }}>⌘ -</span>
+                    </button>
+
+                    {/* Zoom to 100% */}
+                    <button
+                      onClick={handleZoomTo100}
+                      className="w-full flex items-center justify-between transition-all duration-200 rounded-lg"
+                      style={{
+                        height: '36px',
+                        paddingLeft: '12px',
+                        paddingRight: '12px',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        gap: '12px',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                      }}
+                    >
+                      <span style={{ color: '#EDEEF1' }}>Zoom to 100%</span>
+                      <span style={{ color: '#AEB1BC', fontWeight: 500, letterSpacing: '0.3px' }}>⌘ 0</span>
+                    </button>
+
+                    {/* Zoom to fit */}
+                    <button
+                      onClick={handleZoomToFit}
+                      className="w-full flex items-center justify-between transition-all duration-200 rounded-lg"
+                      style={{
+                        height: '36px',
+                        paddingLeft: '12px',
+                        paddingRight: '12px',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        gap: '12px',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                      }}
+                    >
+                      <span style={{ color: '#EDEEF1' }}>Zoom to fit</span>
+                      <span style={{ color: '#AEB1BC', fontWeight: 500, letterSpacing: '0.3px' }}>⌘ 1</span>
+                    </button>
                   </div>
                 </>
               )}

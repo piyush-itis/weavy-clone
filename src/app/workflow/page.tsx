@@ -13,6 +13,7 @@ export default function WorkflowPage() {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [saveStatus, setSaveStatus] = useState<string>("");
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   // Load workflow on mount
   useEffect(() => {
@@ -90,74 +91,43 @@ export default function WorkflowPage() {
 
   return (
     <div className="flex h-screen bg-dark-bg">
-      <Sidebar onAddNode={handleAddNode} />
+      <Sidebar 
+        onAddNode={handleAddNode} 
+        onPanelStateChange={setIsPanelOpen}
+        onSave={handleSave}
+        onExport={handleExport}
+        onImport={handleImport}
+        onClear={handleClear}
+        nodes={nodes}
+        edges={edges}
+        saveStatus={saveStatus}
+      />
       <div className="flex-1 flex flex-col relative">
         {/* Top Cards */}
         <div className="absolute top-4 left-4 right-4 z-10 flex items-center justify-between pointer-events-none">
-          {/* File Name Card - Top Left */}
-          <div 
-            className="pointer-events-auto"
-            style={{
-              background: '#212126',
-              border: '1px solid rgba(255, 255, 255, 0.04)',
-              borderRadius: '8px',
-              padding: '10px 16px',
-            }}
-          >
-            <input
-              type="text"
-              placeholder="untitled"
-              defaultValue="untitled"
-              className="bg-transparent border-none outline-none text-text-primary placeholder-text-secondary text-[14px] font-medium"
+          {/* File Name Card - Top Left - Hidden when panel is open */}
+          {!isPanelOpen && (
+            <div 
+              className="pointer-events-auto"
               style={{
-                fontFamily: 'DM Sans, Inter, SF Pro Display, system-ui, -apple-system, sans-serif',
-                minWidth: '220px',
+                background: '#212126',
+                border: '1px solid rgba(255, 255, 255, 0.04)',
+                borderRadius: '8px',
+                padding: '10px 16px',
               }}
-            />
-          </div>
-
-          {/* Action Buttons Card - Top Right */}
-          <div 
-            className="pointer-events-auto flex items-center gap-2"
-            style={{
-              background: '#212126',
-              border: '1px solid rgba(255, 255, 255, 0.04)',
-              borderRadius: '8px',
-              padding: '6px 8px',
-            }}
-          >
-            {saveStatus && (
-              <span className="text-sm text-accent-mint font-medium px-2">{saveStatus}</span>
-            )}
-            <button
-              onClick={() => handleSave(nodes, edges)}
-              className="px-3 py-1.5 bg-accent-yellow text-dark-bg rounded-md hover:opacity-90 transition-all duration-200 flex items-center gap-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent-yellow focus:ring-offset-2 focus:ring-offset-dark-sidebar"
             >
-              <Save className="w-4 h-4" />
-              Save
-            </button>
-            <button
-              onClick={handleExport}
-              className="px-3 py-1.5 bg-transparent text-text-secondary rounded-md hover:bg-dark-hover hover:text-text-primary transition-all duration-200 flex items-center gap-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent-yellow focus:ring-offset-2 focus:ring-offset-dark-sidebar"
-            >
-              <Download className="w-4 h-4" />
-              Export
-            </button>
-            <button
-              onClick={handleImport}
-              className="px-3 py-1.5 bg-transparent text-text-secondary rounded-md hover:bg-dark-hover hover:text-text-primary transition-all duration-200 flex items-center gap-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent-yellow focus:ring-offset-2 focus:ring-offset-dark-sidebar"
-            >
-              <Upload className="w-4 h-4" />
-              Import
-            </button>
-            <button
-              onClick={handleClear}
-              className="px-3 py-1.5 bg-transparent text-error rounded-md hover:bg-dark-hover transition-all duration-200 flex items-center gap-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-error focus:ring-offset-2 focus:ring-offset-dark-sidebar"
-            >
-              <Trash2 className="w-4 h-4" />
-              Clear
-            </button>
-          </div>
+              <input
+                type="text"
+                placeholder="untitled"
+                defaultValue="untitled"
+                className="bg-transparent border-none outline-none text-text-primary placeholder-text-secondary text-[14px] font-medium"
+                style={{
+                  fontFamily: 'DM Sans, Inter, SF Pro Display, system-ui, -apple-system, sans-serif',
+                  minWidth: '220px',
+                }}
+              />
+            </div>
+          )}
         </div>
         {/* Canvas */}
         <ReactFlowProvider>
